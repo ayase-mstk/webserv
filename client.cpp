@@ -7,6 +7,8 @@
 #include <cstring>
 #include <iostream>
 
+#define BUF_SIZE 100
+
 int	main()
 {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -20,11 +22,12 @@ int	main()
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(1234); // network byte order (big endian) に変換
-	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	addr.sin_addr.s_addr = inet_addr("127.0.0.2");
 	// inet_aton("127.0.0.1", &addr.sin_addr);
 
 	// ソケット接続要求
 	connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+	std::cout << "sockfd: " << sockfd << std::endl;
 
 	// 送信
 	char	s_str[] = "Hello World!";
@@ -32,8 +35,8 @@ int	main()
 	std::cout << "send: " << s_str << std::endl;
 
 	// 受信
-	char r_str[12];
-	recv(sockfd, r_str, 12, 0);
+	char r_str[BUF_SIZE];
+	recv(sockfd, r_str, BUF_SIZE, 0);
 	std::cout << "accept: " << r_str << std::endl;
 
 	close(sockfd);
