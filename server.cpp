@@ -12,7 +12,7 @@
 #include <vector>
 #include <signal.h>
 
-#define BUF_SIZE 100
+#define BUF_SIZE 5
 #define WORKER_CONNECTIONS 256
 
 volatile sig_atomic_t e_flag = 0;
@@ -43,9 +43,11 @@ int	main(int ac, char *av[])
 	signal(SIGINT, finish_server);
 
 	if(ac != 3) {
-		printf("Usage : %s <ip address> <port>\n", av[0]);
+		std::cout << "[[ Usage : " << av[0] << " <ip address> <port> ]]" << std::endl;
 		exit(1);
 	}
+
+	std::cout << "[[ if you want to finish, please push Ctrl+c ]]" << std::endl << std::endl;
 
 	// serv_sock.sock = socket(AF_INET, SOCK_STREAM, 0);
 	serv_sock.sock = socket(AF_INET, SOCK_STREAM | O_NONBLOCK, 0);
@@ -132,12 +134,13 @@ int	main(int ac, char *av[])
 				if (FD_ISSET(all_socks.sockets[i].sock, &readfds))
 				{
 					FD_CLR(all_socks.sockets[i].sock, &readfds);
-					all_socks.sockets[i].received = true;
 					recv_value = recv(all_socks.sockets[i].sock, msg, BUF_SIZE, MSG_DONTWAIT);
 					if (recv_value > 0)
 					{
 						std::cout << "message receive: " << msg << std::endl;
 					}
+					if (recv_value == 0)
+						all_socks.sockets[i].received = true;
 				}
 			}
 			else
@@ -162,6 +165,7 @@ int	main(int ac, char *av[])
 
 	for (int i = 0; i < all_socks.num; i++)
 		close(all_socks.sockets[i].sock);
+	std::cout << std::endl << "[[ safely ended ]]" << std::endl;
 	return 0;
 }
 
