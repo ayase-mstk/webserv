@@ -9,8 +9,14 @@
 
 #define BUF_SIZE 100
 
-int	main()
+int	main(int ac, char *av[])
 {
+	if (ac != 4)
+	{
+		std::cout << "Usage: %s <ip address> <port> <msg>" << std::endl;
+		return (0);
+	}
+
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd == -1)
 	{
@@ -21,17 +27,16 @@ int	main()
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(struct sockaddr_in));
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(1234); // network byte order (big endian) に変換
-	addr.sin_addr.s_addr = inet_addr("127.0.0.2");
+	addr.sin_addr.s_addr = inet_addr(av[1]);
+	addr.sin_port = htons(atoi(av[2])); // network byte order (big endian) に変換
 	// inet_aton("127.0.0.1", &addr.sin_addr);
 
 	// ソケット接続要求
 	connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
-	std::cout << "sockfd: " << sockfd << std::endl;
 
 	// 送信
-	char	s_str[] = "Hello World!";
-	send(sockfd, s_str, 12, 0);
+	char	*s_str = av[3];
+	send(sockfd, s_str, BUF_SIZE, 0);
 	std::cout << "send: " << s_str << std::endl;
 
 	// 受信
@@ -42,4 +47,31 @@ int	main()
 	close(sockfd);
 
 	return (0);
+}
+
+int sock = socket(PF_INET, SOCK_STREAM);
+bind(sock, addr);
+listen(sock);
+
+allsock.add(sock);
+
+while ( 1 ) {
+    result = select(sock);
+    if ( result > 0 ) {
+        int new_sock = accept(sock, &addr);
+        allsock.add(new_sock);
+    }
+    foreach ( sock = allsock ) {
+        result = select(sock);
+        if ( result > 0 ) {
+            char buf[100];
+            size_t size = read(new_sock, buf, 100);
+            if ( size == 0 ) {
+                close(new_sock);
+            }
+            else {
+                write(new_sock, buf, size);
+            }
+        }
+    }
 }
